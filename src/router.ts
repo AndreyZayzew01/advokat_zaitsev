@@ -125,43 +125,7 @@ export class Router {
   }
 
   // Переинициализация обработчиков событий для нового контента
-  private reinitializeEventHandlers(): void {
-    // Переинициализация CTA-кнопок
-    const ctaButtons = document.querySelectorAll('.cta-button');
-    const modal = document.getElementById('consultationModal');
-    const modalClose = document.querySelector('.modal-close');
-    const modalOverlay = document.getElementById('consultationModal');
-
-    // Открытие модального окна
-    ctaButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        if (modal) {
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-        }
-      });
-    });
-
-    // Закрытие модального окна по кнопке
-    if (modalClose) {
-      modalClose.addEventListener('click', () => {
-        if (modal) {
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
-        }
-      });
-    }
-
-    // Закрытие модального окна по клику на overlay
-    if (modalOverlay) {
-      modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-          modalOverlay.classList.remove('active');
-          document.body.style.overflow = '';
-        }
-      });
-    }
-
+  reinitializeEventHandlers(): void {
     // Обработка ссылок внутри загруженного контента
     const internalLinks = this.appContainer?.querySelectorAll('a[data-link]');
     internalLinks?.forEach(link => {

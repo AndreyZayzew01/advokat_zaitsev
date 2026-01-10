@@ -56,6 +56,7 @@
           src="/advocat_photo.jpg"
           alt="Зайцев Валерий Олегович - Адвокат"
           class="about-image"
+          loading="lazy"
         />
       </div>
       <div class="about-text-wrapper">
@@ -155,25 +156,8 @@
 <section class="articles-preview">
   <div class="container">
     <h2 class="section-title">Последние статьи</h2>
-    <div class="articles-grid">
-      <article class="article-card">
-        <div class="article-date">15 января 2026</div>
-        <h3 class="article-title">Как защитить свои права при разводе</h3>
-        <p class="article-excerpt">Практические советы по защите имущественных и личных прав при расторжении брака...</p>
-        <a href="/useful" class="article-link" data-link>Читать далее →</a>
-      </article>
-      <article class="article-card">
-        <div class="article-date">10 января 2026</div>
-        <h3 class="article-title">Наследство: что нужно знать</h3>
-        <p class="article-excerpt">Основные моменты оформления наследства и типичные ошибки, которых следует избегать...</p>
-        <a href="/useful" class="article-link" data-link>Читать далее →</a>
-      </article>
-      <article class="article-card">
-        <div class="article-date">5 января 2026</div>
-        <h3 class="article-title">Трудовые споры: когда обращаться к адвокату</h3>
-        <p class="article-excerpt">Ситуации, в которых помощь адвоката необходима для защиты ваших трудовых прав...</p>
-        <a href="/useful" class="article-link" data-link>Читать далее →</a>
-      </article>
+    <div class="articles-grid" id="homeArticlesContainer">
+      <div class="loading-message">Загрузка статей...</div>
     </div>
     <div class="section-link-wrapper">
       <a href="/useful" class="read-more-link section-link" data-link>Все статьи →</a>
