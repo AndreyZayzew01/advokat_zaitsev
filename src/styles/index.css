@@ -51,6 +51,14 @@ h1, h2, h3, h4, h5, h6 {
   gap: 30px
 }
 
+/* Базовый класс для SVG-иконок */
+.icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* ============================================
    HEADER И НАВИГАЦИЯ
    ============================================ */
@@ -85,6 +93,7 @@ h1, h2, h3, h4, h5, h6 {
 .logo-text {
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .logo h1 {
@@ -106,6 +115,7 @@ h1, h2, h3, h4, h5, h6 {
   width: auto;
   object-fit: contain;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .logo-emblem path {
@@ -275,10 +285,10 @@ h1, h2, h3, h4, h5, h6 {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   min-height: 250px;
   width: 280px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-items: start;
+  justify-items: center;
   flex: 0 0 auto;
   opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
@@ -295,7 +305,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .advantage-icon {
   font-size: 48px;
-  margin-bottom: 20px;
+}
+
+.advantage-icon .icon {
+  width: 48px;
+  height: 48px;
+  color: var(--primary-blue-dark);
 }
 
 .advantage-title {
@@ -304,6 +319,10 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--primary-blue-dark);
   text-align: center;
   width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .advantage-text {
@@ -573,10 +592,21 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--white);
 }
 
+.footer-link:hover .footer-icon .icon {
+  filter: brightness(0) invert(1);
+}
+
 .footer-icon {
   font-size: 20px;
   width: 24px;
   text-align: center;
+}
+
+.footer-icon .icon,
+.messenger-icon .icon {
+  width: 24px;
+  height: 24px;
+  color: var(--white);
 }
 
 .footer-messengers {
@@ -612,9 +642,17 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #25D366;
 }
 
+.messenger-btn-wa:hover .messenger-icon .icon {
+  filter: brightness(0) invert(1);
+}
+
 .messenger-btn-tg:hover {
   background-color: #0088cc;
   border-color: #0088cc;
+}
+
+.messenger-btn-tg:hover .messenger-icon .icon {
+  filter: brightness(0) invert(1);
 }
 
 .messenger-icon {
@@ -1114,6 +1152,12 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 15px;
 }
 
+.achievement-icon .icon {
+  width: 40px;
+  height: 40px;
+  color: var(--primary-blue-dark);
+}
+
 .achievement-title {
   font-size: 20px;
   margin-bottom: 10px;
@@ -1211,10 +1255,11 @@ h1, h2, h3, h4, h5, h6 {
 .contact-card {
   text-align: center;
   padding: 40px 30px;
-  background: var(--white);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
   border-radius: 10px;
   box-shadow: 0 4px 6px var(--shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: var(--white);
 }
 
 .contact-card:hover {
@@ -1227,22 +1272,29 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 20px;
 }
 
+.contact-icon .icon {
+  width: 40px;
+  height: 40px;
+  color: var(--white);
+  filter: brightness(0) invert(1);
+}
+
 .contact-title {
   font-size: 22px;
   margin-bottom: 15px;
-  color: var(--primary-blue-dark);
+  color: var(--white);
 }
 
 .contact-text {
   font-size: 18px;
   font-weight: 500;
-  color: var(--gray-dark);
+  color: var(--white);
   margin-bottom: 10px;
 }
 
 .contact-note {
   font-size: 14px;
-  color: var(--gray);
+  color: rgba(255, 255, 255, 0.8);
   font-style: italic;
 }
 
