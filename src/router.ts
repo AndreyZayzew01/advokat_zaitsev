@@ -76,8 +76,21 @@ export class Router {
         // Загружаем HTML
         const html = await route.view();
         
+        // Обрабатываем CSS ссылки перед вставкой контента
+        this.loadStylesFromHTML(html);
+        
+        // Удаляем <link> теги из HTML перед вставкой
+        const htmlWithoutLinks = html.replace(/<link[^>]*>/gi, '');
+        
         // Вставляем контент
-        this.appContainer.innerHTML = html;
+        this.appContainer.innerHTML = htmlWithoutLinks;
+        
+        // Прокручиваем страницу в начало после смены контента
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
         
         // Удаляем fade-out и добавляем fade-in
         this.appContainer.classList.remove('fade-out');
@@ -100,7 +113,11 @@ export class Router {
         if (notFoundRoute) {
           try {
             const html = await notFoundRoute.view();
-            this.appContainer.innerHTML = html;
+            // Обрабатываем CSS ссылки
+            this.loadStylesFromHTML(html);
+            // Удаляем <link> теги из HTML перед вставкой
+            const htmlWithoutLinks = html.replace(/<link[^>]*>/gi, '');
+            this.appContainer.innerHTML = htmlWithoutLinks;
           } catch (e) {
             this.appContainer.innerHTML = '<h1>Ошибка 404</h1><p>Страница не найдена</p>';
           }
@@ -122,6 +139,24 @@ export class Router {
         link.classList.remove('active');
       }
     });
+  }
+
+  // Загрузка CSS из HTML контента
+  private loadStylesFromHTML(html: string): void {
+    const linkRegex = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+    let match;
+    
+    while ((match = linkRegex.exec(html)) !== null) {
+      const href = match[1];
+      // Проверяем, не загружен ли уже этот CSS
+      const existingLink = document.querySelector(`link[href="${href}"]`);
+      if (!existingLink) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+      }
+    }
   }
 
   // Переинициализация обработчиков событий для нового контента

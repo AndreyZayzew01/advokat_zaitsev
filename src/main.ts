@@ -9,15 +9,145 @@ console.log('Приложение загружено');
 
 // Инициализация роутера
 document.addEventListener('DOMContentLoaded', () => {
+  // Сначала инициализируем обработчики CTA-кнопок, чтобы они работали даже для статического контента в index.html
+  // Инициализация обработчиков CTA-кнопок с использованием делегирования событий
+  // Это позволяет обрабатывать кнопки, добавленные динамически
+  let ctaHandlersInitialized = false;
+
+  // Прямое навешивание обработчиков на существующие CTA-кнопки
+  // Нужно на случай, если по каким-то причинам делегирование кликов не срабатывает
+  const bindDirectCTAButtons = () => {
+    const modal = document.getElementById('consultationModal');
+    if (!modal) {
+      return;
+    }
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.cta-button');
+    buttons.forEach(button => {
+      // Пропускаем кнопку отправки формы и кнопки внутри формы консультации
+      if (button.type === 'submit') return;
+      if (button.closest('#consultationForm')) return;
+
+      // Чтобы не навешивать дубликаты, проверяем флаг на элементе
+      if ((button as any)._ctaBound) return;
+      (button as any)._ctaBound = true;
+
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Останавливаем всплытие, чтобы не сработало делегирование второй раз
+        e.stopPropagation();
+
+        const location = button.closest('section')?.className || 'unknown';
+        trackCTAClick(location);
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+  };
+
+  const initCTAButtons = () => {
+    // Предотвращаем множественную регистрацию обработчиков
+    if (ctaHandlersInitialized) {
+      return;
+    }
+    ctaHandlersInitialized = true;
+    
+    // Проверяем наличие модального окна
+    const modal = document.getElementById('consultationModal');
+    if (!modal) {
+      console.warn('Модальное окно consultationModal не найдено в DOM при инициализации');
+    }
+
+    // Используем делегирование событий для обработки всех CTA-кнопок
+    document.body.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      
+      // Ищем кнопку с классом cta-button (может быть сам target или его родитель)
+      const button = target.closest('.cta-button') as HTMLButtonElement | null;
+      
+      if (button && button instanceof HTMLButtonElement) {
+        // Предотвращаем открытие, если это кнопка отправки формы
+        // ВАЖНО: Все CTA-кнопки должны иметь type="button", чтобы не считаться submit-кнопками
+        // Кнопка отправки формы в модалке имеет type="submit" и класс form-submit-btn
+        if (button.type === 'submit') {
+          return;
+        }
+        
+        // Предотвращаем открытие, если кнопка находится внутри формы консультации (кроме самой кнопки submit)
+        const form = button.closest('form');
+        if (form && form.id === 'consultationForm') {
+          return;
+        }
+        
+        // Получаем модальное окно в момент клика
+        const modal = document.getElementById('consultationModal');
+        if (modal) {
+          e.preventDefault();
+          e.stopPropagation();
+          const location = button.closest('section')?.className || 'unknown';
+          trackCTAClick(location);
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          console.error('Модальное окно consultationModal не найдено в DOM');
+        }
+      }
+    });
+
+    // Закрытие модального окна по кнопке (используем делегирование событий)
+    document.body.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const closeButton = target.closest('.modal-close');
+      
+      if (closeButton) {
+        const modal = document.getElementById('consultationModal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+          resetForm();
+        }
+      }
+    });
+
+    // Закрытие модального окна по клику на overlay (используем делегирование событий)
+    document.body.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const modal = document.getElementById('consultationModal');
+      
+      if (modal && target === modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetForm();
+      }
+    });
+
+    // Закрытие модального окна по Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('consultationModal');
+        if (modal && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+          resetForm();
+        }
+      }
+    });
+  };
+
+  // Инициализируем обработчики CTA-кнопок ДО инициализации роутера
+  initCTAButtons();
+  // Подстраховка: привязываем обработчики напрямую к уже существующим кнопкам
+  bindDirectCTAButtons();
+
   const router = new Router()
-    .register('/', () => fetch('/src/views/home.html').then(r => r.text()))
-    .register('/services', () => fetch('/src/views/services.html').then(r => r.text()))
-    .register('/achievements', () => fetch('/src/views/achievements.html').then(r => r.text()))
-    .register('/career', () => fetch('/src/views/career.html').then(r => r.text()))
-    .register('/contacts', () => fetch('/src/views/contacts.html').then(r => r.text()))
-    .register('/useful', () => fetch('/src/views/useful.html').then(r => r.text()))
-    .register('/privacy', () => fetch('/src/views/privacy.html').then(r => r.text()))
-    .register('/404', () => fetch('/src/views/404.html').then(r => r.text()));
+    .register('/', () => fetch('/src/views/home/home.html').then(r => r.text()))
+    .register('/services', () => fetch('/src/views/services/services.html').then(r => r.text()))
+    .register('/achievements', () => fetch('/src/views/achievements/achievements.html').then(r => r.text()))
+    .register('/career', () => fetch('/src/views/career/career.html').then(r => r.text()))
+    .register('/contacts', () => fetch('/src/views/contacts/contacts.html').then(r => r.text()))
+    .register('/useful', () => fetch('/src/views/useful/useful.html').then(r => r.text()))
+    .register('/privacy', () => fetch('/src/views/privacy/privacy.html').then(r => r.text()))
+    .register('/404', () => fetch('/src/views/404/404.html').then(r => r.text()));
   
   // Инициализация после регистрации всех маршрутов
   router.init();
@@ -25,67 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализация аналитики (раскомментируйте и укажите реальные ID)
   // initGoogleAnalytics('G-XXXXXXXXXX');
   // initYandexMetrika(12345678);
-
-  // Инициализация обработчиков CTA-кнопок с использованием делегирования событий
-  // Это позволяет обрабатывать кнопки, добавленные динамически
-  const initCTAButtons = () => {
-    const modal = document.getElementById('consultationModal');
-    const modalClose = document.querySelector('.modal-close');
-    const modalOverlay = document.getElementById('consultationModal');
-
-    // Используем делегирование событий для обработки всех CTA-кнопок
-    document.body.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const button = target.closest('.cta-button');
-      
-      if (button && button instanceof HTMLButtonElement) {
-        // Предотвращаем открытие, если это кнопка отправки формы
-        if (button.type === 'submit') {
-          return;
-        }
-        
-        // Открываем модальное окно
-        if (modal) {
-          const location = button.closest('section')?.className || 'unknown';
-          trackCTAClick(location);
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-          e.preventDefault();
-        }
-      }
-    });
-
-    // Закрытие модального окна по кнопке
-    if (modalClose) {
-      modalClose.addEventListener('click', () => {
-        if (modal) {
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
-          resetForm();
-        }
-      });
-    }
-
-    // Закрытие модального окна по клику на overlay
-    if (modalOverlay) {
-      modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-          modalOverlay.classList.remove('active');
-          document.body.style.overflow = '';
-          resetForm();
-        }
-      });
-    }
-
-    // Закрытие модального окна по Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal?.classList.contains('active')) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        resetForm();
-      }
-    });
-  };
 
   // Инициализация формы консультации
   const initConsultationForm = () => {
@@ -348,8 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // Инициализация CTA-кнопок
-  initCTAButtons();
   
   // Инициализация формы
   initConsultationForm();
@@ -432,6 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initHomeArticles();
       initArticlesPage();
+      // После подгрузки нового HTML (например, contacts.html) ещё раз привязываем обработчики к CTA-кнопкам
+      bindDirectCTAButtons();
     }, 100);
   };
 

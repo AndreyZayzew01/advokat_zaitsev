@@ -10,7 +10,7 @@
   
   /* Акцентные цвета */
   --accent-green: #059669;        /* Спокойный зеленый */
-  --accent-burgundy: #991b1b;     /* Теплый бордовый */
+  --accent-green-light: #00ff00;  /* Светлый зеленый */
   
   /* Нейтральные цвета */
   --white: #ffffff;
@@ -31,7 +31,7 @@
 }
 
 body {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Times New Roman', Times, serif;
   color: var(--gray-dark);
   line-height: 1.6;
   background-color: var(--white);
@@ -45,10 +45,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  gap: 30px
+  gap: 30px;
 }
 
 /* Базовый класс для SVG-иконок */
@@ -108,6 +109,20 @@ h1, h2, h3, h4, h5, h6 {
   color: rgba(255, 255, 255, 0.9);
   margin-top: 4px;
   font-weight: 300;
+}
+
+.logo-phone-link {
+  color: var(--white);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.logo-phone-link:hover {
+  opacity: 0.8;
+}
+
+.logo-phone-link:active {
+  opacity: 0.6;
 }
 
 .logo-emblem {
@@ -205,372 +220,6 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
-/* ============================================
-   HERO СЕКЦИЯ (Главный баннер)
-   ============================================ */
-
-.hero {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 50%, var(--primary-blue) 100%);
-  color: var(--white);
-  padding: 100px 20px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-  opacity: 0.3;
-  animation: subtleMove 20s ease-in-out infinite;
-}
-
-@keyframes subtleMove {
-  0%, 100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(-10px, -10px);
-  }
-}
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.hero-title {
-  font-size: 48px;
-  color: var(--white);
-  margin-bottom: 20px;
-  font-weight: 700;
-}
-
-.hero-subtitle {
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 40px;
-  font-weight: 300;
-}
-
-/* ============================================
-   КНОПКИ CTA (Призывы к действию)
-   ============================================ */
-
-.cta-button {
-  background-color: var(--accent-green);
-  color: var(--white);
-  border: none;
-  padding: 16px 40px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
-  font-family: 'Roboto', sans-serif;
-}
-
-.cta-button:hover,
-.cta-button:focus {
-  background-color: #047857;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
-  outline: 2px solid var(--white);
-  outline-offset: 2px;
-}
-
-.cta-button:active {
-  transform: translateY(0);
-}
-
-.cta-button-large {
-  padding: 20px 50px;
-  font-size: 20px;
-}
-
-/* ============================================
-   СЕКЦИЯ ПРЕИМУЩЕСТВ
-   ============================================ */
-
-.advantages {
-  padding: 80px 20px;
-  background-color: var(--gray-light);
-  
-}
-
-.section-title {
-  text-align: center;
-  font-size: 36px;
-  margin-bottom: 50px;
-  color: var(--primary-blue-dark);
-}
-
-.advantages-grid {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-  flex-wrap: nowrap;
-}
-
-.advantage-card {
-  background-color: var(--white);
-  padding: 10px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 12px var(--shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  min-height: 250px;
-  width: 280px;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  align-items: start;
-  justify-items: center;
-  flex: 0 0 auto;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-}
-
-.advantage-card:nth-child(1) { animation-delay: 0.1s; }
-.advantage-card:nth-child(2) { animation-delay: 0.2s; }
-.advantage-card:nth-child(3) { animation-delay: 0.3s; }
-
-.advantage-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-.advantage-icon {
-  font-size: 48px;
-}
-
-.advantage-icon .icon {
-  width: 48px;
-  height: 48px;
-  color: var(--primary-blue-dark);
-}
-
-.advantage-title {
-  font-size: 22px;
-  margin-bottom: 15px;
-  color: var(--primary-blue-dark);
-  text-align: center;
-  width: 100%;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.advantage-text {
-  font-size: 16px;
-  color: var(--gray);
-  line-height: 1.6;
-}
-
-/* ============================================
-   СЕКЦИЯ ОБ АДВОКАТЕ
-   ============================================ */
-
-.about-preview {
-  padding: 80px 20px;
-  background-color: var(--white);
-}
-
-.about-content {
-  max-width: 1000px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 50px;
-  flex-wrap: wrap;
-}
-
-.about-image-wrapper {
-  flex: 0 0 auto;
-  width: 100%;
-  max-width: 350px;
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.about-image {
-  width: 100%;
-  height: auto;
-  max-height: 450px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  aspect-ratio: 3 / 4;
-}
-
-.about-image:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-}
-
-.about-text-wrapper {
-  flex: 1 1 400px;
-  text-align: left;
-}
-
-.about-text {
-  font-size: 18px;
-  color: var(--gray-dark);
-  line-height: 1.8;
-  margin-bottom: 30px;
-  text-align: left;
-}
-
-.read-more-link {
-  color: var(--accent-burgundy);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.read-more-link:hover {
-  color: #7f1d1d;
-  text-decoration: underline;
-}
-
-/* ============================================
-   СЕКЦИЯ УСЛУГ
-   ============================================ */
-
-.services {
-  padding: 80px 20px;
-  background-color: var(--gray-light);
-}
-
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.service-card {
-  background-color: var(--white);
-  padding: 35px;
-  border-radius: 12px;
-  border-left: 4px solid var(--accent-green);
-  box-shadow: 0 4px 12px var(--shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-}
-
-.service-card:nth-child(1) { animation-delay: 0.1s; }
-.service-card:nth-child(2) { animation-delay: 0.2s; }
-.service-card:nth-child(3) { animation-delay: 0.3s; }
-.service-card:nth-child(4) { animation-delay: 0.4s; }
-.service-card:nth-child(5) { animation-delay: 0.5s; }
-.service-card:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-left-color: var(--accent-burgundy);
-}
-
-.service-title {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: var(--primary-blue-dark);
-}
-
-.service-text {
-  font-size: 16px;
-  color: var(--gray);
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
-
-.service-link {
-  display: inline-block;
-  color: var(--accent-burgundy);
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  margin-top: auto;
-}
-
-.service-link:hover {
-  color: #7f1d1d;
-  transform: translateX(5px);
-}
-
-/* ============================================
-   CTA СЕКЦИЯ
-   ============================================ */
-
-.cta-section {
-  padding: 80px 20px;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 50%, var(--primary-blue) 100%);
-  color: var(--white);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid2" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid2)"/></svg>');
-  opacity: 0.5;
-}
-
-.cta-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.cta-title {
-  font-size: 36px;
-  color: var(--white);
-  margin-bottom: 20px;
-}
-
-.cta-text {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 40px;
-}
 
 /* ============================================
    FOOTER
@@ -1073,7 +722,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Times New Roman', Times, serif;
   color: var(--gray-dark);
   transition: all 0.3s ease;
   background-color: var(--white);
@@ -1095,7 +744,7 @@ select:focus {
 .form-textarea {
   resize: vertical;
   min-height: 100px;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Times New Roman', Times, serif;
 }
 
 .form-checkbox {
@@ -1297,6 +946,17 @@ select:focus {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -1655,6 +1315,7 @@ select:focus {
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  cursor: pointer;
 }
 
 .article-card {
@@ -1668,16 +1329,20 @@ select:focus {
   flex-direction: column;
   opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
+  cursor: pointer;
 }
 
 .article-card:nth-child(1) { animation-delay: 0.1s; }
 .article-card:nth-child(2) { animation-delay: 0.2s; }
 .article-card:nth-child(3) { animation-delay: 0.3s; }
+.article-card:nth-child(4) { animation-delay: 0.4s; }
+.article-card:nth-child(5) { animation-delay: 0.5s; }
+.article-card:nth-child(6) { animation-delay: 0.6s; }
 
 .article-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-top-color: var(--accent-burgundy);
+  border-top-color: var(--accent-green-light);
 }
 
 .article-date {
@@ -1702,7 +1367,7 @@ select:focus {
 }
 
 .article-link {
-  color: var(--accent-burgundy);
+  color: var(--accent-green);
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
@@ -1711,7 +1376,7 @@ select:focus {
 }
 
 .article-link:hover {
-  color: #7f1d1d;
+  color: var(--accent-green-light);
   transform: translateX(5px);
 }
 
@@ -1720,6 +1385,7 @@ select:focus {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
   margin-top: 40px;
+  
 }
 
 .useful-card {
@@ -1827,38 +1493,6 @@ select:focus {
   }
 }
 
-/* Стили для страницы 404 */
-.error-page {
-  padding: 100px 0;
-  text-align: center;
-}
-
-.error-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.error-title {
-  font-size: 120px;
-  font-weight: 700;
-  color: var(--primary-blue);
-  margin-bottom: 20px;
-  line-height: 1;
-}
-
-.error-subtitle {
-  font-size: 32px;
-  color: var(--primary-blue-dark);
-  margin-bottom: 20px;
-}
-
-.error-text {
-  font-size: 18px;
-  color: var(--gray);
-  margin-bottom: 40px;
-  line-height: 1.6;
-}
-
 /* Адаптивность для новых страниц */
 @media (max-width: 768px) {
   .page-title {
@@ -1881,14 +1515,6 @@ select:focus {
 
   .timeline-item {
     padding-left: 30px;
-  }
-
-  .error-title {
-    font-size: 80px;
-  }
-
-  .error-subtitle {
-    font-size: 24px;
   }
 }
 

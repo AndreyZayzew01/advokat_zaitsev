@@ -1,0 +1,55 @@
+/* ============================================
+   СТИЛИ ДЛЯ СТРАНИЦЫ 404
+   ============================================ */
+
+:root {
+  /* Основные цвета - сбалансированный стиль */
+  --primary-blue: #1e3a8a;        /* Доверительный синий */
+  --primary-blue-dark: #1e40af;   /* Более темный оттенок */
+  --primary-blue-light: #3b82f6;  /* Светлый оттенок */
+  
+  /* Нейтральные цвета */
+  --gray: #6b7280;
+}
+
+.error-page {
+  padding: 100px 0;
+  text-align: center;
+}
+
+.error-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.error-title {
+  font-size: 120px;
+  font-weight: 700;
+  color: var(--primary-blue);
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+.error-subtitle {
+  font-size: 32px;
+  color: var(--primary-blue-dark);
+  margin-bottom: 20px;
+}
+
+.error-text {
+  font-size: 18px;
+  color: var(--gray);
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+/* Адаптивность для страницы 404 */
+@media (max-width: 768px) {
+  .error-title {
+    font-size: 80px;
+  }
+
+  .error-subtitle {
+    font-size: 24px;
+  }
+}
