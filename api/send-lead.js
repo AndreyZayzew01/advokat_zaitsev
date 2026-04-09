@@ -26,7 +26,9 @@ async function sendToTelegram(payload) {
     `Телефон: ${payload.phone || '—'}`,
     `Email: ${payload.email || '—'}`,
     `Тип: ${payload.type || '—'}`,
-    `Сообщение: ${payload.message || '—'}`,
+    `Способ связи: ${payload.contactMethod || '—'}`,
+    `Удобное время: ${payload.contactTime || '—'}`,
+    'Детали дела не собирались в онлайн-форме.',
     `Источник: ${payload.source || '—'}`,
   ].join('\n');
 
@@ -62,7 +64,9 @@ async function sendEmail(payload) {
 Телефон: ${payload.phone || '—'}
 Email: ${payload.email || '—'}
 Тип: ${payload.type || '—'}
-Сообщение: ${payload.message || '—'}
+Способ связи: ${payload.contactMethod || '—'}
+Удобное время: ${payload.contactTime || '—'}
+Детали дела не собирались в онлайн-форме.
 Источник: ${payload.source || '—'}
 `,
     }),
@@ -80,13 +84,14 @@ async function handleRequest(req) {
   }
 
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const { name, phone, email, type, message, source, honeypot } = body || {};
+  const { name, phone, email, type, contactMethod, contactTime, source, honeypot } = body || {};
 
   // Простая валидация
   if (honeypot) return jsonResponse(400, { ok: false, error: 'Spam detected' });
   if (!name || !phone) return jsonResponse(400, { ok: false, error: 'Name and phone are required' });
+  if (!contactMethod || !contactTime) return jsonResponse(400, { ok: false, error: 'Contact method and time are required' });
 
-  const payload = { name, phone, email, type, message, source };
+  const payload = { name, phone, email, type, contactMethod, contactTime, source };
 
   try {
     const results = await Promise.allSettled([sendToTelegram(payload), sendEmail(payload)]);

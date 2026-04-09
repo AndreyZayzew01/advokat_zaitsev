@@ -290,7 +290,7 @@
         <button class="modal-close" aria-label="Закрыть окно">&times;</button>
         <div class="modal-content">
           <h2 class="modal-title">Записаться на консультацию</h2>
-          <p class="modal-subtitle">Заполните форму, и я свяжусь с вами в ближайшее время</p>
+          <p class="modal-subtitle">Не указывайте детали дела. Оставьте контакты — я свяжусь с вами лично.</p>
           <form class="consultation-form" id="consultationForm">
             <div class="form-group">
               <label for="clientName" class="form-label">Ваше имя *</label>
@@ -349,14 +349,22 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="clientMessage" class="form-label">Сообщение</label>
-              <textarea
-                id="clientMessage"
-                name="message"
-                class="form-input form-textarea"
-                rows="4"
-                placeholder="Опишите кратко вашу ситуацию..."
-              ></textarea>
+              <label for="contactMethod" class="form-label">Удобный способ связи *</label>
+              <select id="contactMethod" name="contactMethod" class="form-input" required>
+                <option value="">Выберите способ</option>
+                <option value="phone">Телефонный звонок</option>
+                <option value="telegram">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="contactTime" class="form-label">Удобное время *</label>
+              <select id="contactTime" name="contactTime" class="form-input" required>
+                <option value="">Выберите время</option>
+                <option value="morning">Утро (09:00–12:00)</option>
+                <option value="day">День (12:00–17:00)</option>
+                <option value="evening">Вечер (17:00–20:00)</option>
+              </select>
             </div>
             <div class="form-group form-checkbox">
               <input
@@ -367,7 +375,7 @@
                 class="form-checkbox-input"
               />
               <label for="consent" class="form-checkbox-label">
-                Я согласен на обработку персональных данных *
+                Я согласен на обработку контактных данных и подтверждаю, что не передаю детали дела *
               </label>
             </div>
             <button type="submit" class="cta-button form-submit-btn">

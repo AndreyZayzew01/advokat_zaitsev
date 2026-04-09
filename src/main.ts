@@ -253,7 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
         phone: (form.querySelector('#clientPhone') as HTMLInputElement)?.value.trim() || '',
         email: (form.querySelector('#clientEmail') as HTMLInputElement)?.value.trim() || '',
         type: (form.querySelector('#consultationType') as HTMLSelectElement)?.value || '',
-        message: (form.querySelector('#clientMessage') as HTMLTextAreaElement)?.value.trim() || '',
+        contactMethod: (form.querySelector('#contactMethod') as HTMLSelectElement)?.value || '',
+        contactTime: (form.querySelector('#contactTime') as HTMLSelectElement)?.value || '',
         consent: (form.querySelector('#consent') as HTMLInputElement)?.checked || false
       };
 
@@ -384,6 +385,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (emailField) {
           emailField.classList.add('form-input-error');
           showFieldError(emailField, error);
+        }
+      } else if (error.toLowerCase().includes('способ связи')) {
+        const methodField = form.querySelector('#contactMethod') as HTMLSelectElement;
+        if (methodField) {
+          methodField.classList.add('form-input-error');
+          showFieldError(methodField, error);
+        }
+      } else if (error.toLowerCase().includes('время')) {
+        const timeField = form.querySelector('#contactTime') as HTMLSelectElement;
+        if (timeField) {
+          timeField.classList.add('form-input-error');
+          showFieldError(timeField, error);
         }
       } else if (error.includes('согласие')) {
         const consentField = form.querySelector('#consent') as HTMLInputElement;

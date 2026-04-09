@@ -5,7 +5,8 @@ interface FormData {
   phone: string;
   email?: string;
   type: string;
-  message: string;
+  contactMethod: string;
+  contactTime: string;
   consent: boolean;
 }
 
@@ -27,6 +28,14 @@ export function validateForm(formData: FormData): { isValid: boolean; errors: st
 
   if (!formData.consent) {
     errors.push('Необходимо согласие на обработку персональных данных');
+  }
+
+  if (!formData.contactMethod) {
+    errors.push('Выберите удобный способ связи');
+  }
+
+  if (!formData.contactTime) {
+    errors.push('Укажите удобное время для звонка/связи');
   }
 
   return {
