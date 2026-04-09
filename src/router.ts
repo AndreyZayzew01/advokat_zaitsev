@@ -5,6 +5,7 @@ type RouteView = () => Promise<string>;
 interface Route {
   path: string;
   view: RouteView;
+  regex: RegExp;
 }
 
 export class Router {
@@ -46,7 +47,7 @@ export class Router {
 
   // Регистрация маршрута
   register(path: string, view: RouteView): Router {
-    this.routes.push({ path, view });
+    this.routes.push({ path, view, regex: this.createRegex(path) });
     return this;
   }
 
@@ -62,8 +63,7 @@ export class Router {
     if (!this.appContainer) return;
 
     const path = window.location.pathname || '/';
-    const route = this.routes.find(r => r.path === path) || 
-                  this.routes.find(r => r.path === '/404');
+    const route = this.matchRoute(path) || this.routes.find(r => r.path === '/404');
 
     if (route) {
       try {
@@ -133,7 +133,7 @@ export class Router {
     
     navLinks.forEach(link => {
       const href = link.getAttribute('href');
-      if (href === path) {
+      if (href === path || (href && path.startsWith(href) && href !== '/')) {
         link.classList.add('active');
       } else {
         link.classList.remove('active');
@@ -173,5 +173,15 @@ export class Router {
       });
     });
   }
-}
 
+  private createRegex(path: string): RegExp {
+    // Преобразуем /useful/:id в регулярку вида ^/useful/([^/]+)$
+    if (!path.includes(':')) return new RegExp(`^${path}$`);
+    const pattern = path.replace(/:([^/]+)/g, '([^/]+)');
+    return new RegExp(`^${pattern}$`);
+  }
+
+  private matchRoute(path: string): Route | undefined {
+    return this.routes.find(r => r.regex.test(path));
+  }
+}

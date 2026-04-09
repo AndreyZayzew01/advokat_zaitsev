@@ -31,14 +31,14 @@
 }
 
 body {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: var(--gray-dark);
   line-height: 1.6;
   background-color: var(--white);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 700;
   line-height: 1.2;
   color: var(--primary-blue-dark);
@@ -58,6 +58,68 @@ h1, h2, h3, h4, h5, h6 {
   height: 1em;
   display: inline-block;
   vertical-align: middle;
+}
+
+/* Кнопки CTA */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+  color: var(--white);
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.cta-button:hover,
+.cta-button:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(30, 58, 138, 0.25);
+}
+
+.cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.18);
+}
+
+.cta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.form-submit-btn {
+  width: 100%;
+  justify-content: center;
+  position: relative;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-top-color: rgba(255, 255, 255, 1);
+  border-radius: 50%;
+  display: none;
+  animation: spin 0.7s linear infinite;
+}
+
+.is-loading .btn-spinner {
+  display: inline-block;
+}
+
+.is-loading .btn-label {
+  opacity: 0.85;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================
@@ -367,6 +429,36 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 8px;
   width: 100%;
   min-height: 200px;
+}
+
+.map-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-quick-cta {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-cta-link {
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.quick-cta-link:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* ============================================
@@ -766,6 +858,15 @@ select:focus {
   color: var(--gray-dark);
   line-height: 1.5;
   cursor: pointer;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
 }
 
 .form-submit-btn {

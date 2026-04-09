@@ -1,9 +1,9 @@
 // Точка входа приложения
 import { Router } from './router';
-import { validateForm, formatPhone, checkRateLimit, getUserIdentifier, submitForm } from './utils/formHandler';
+import { validateForm, formatPhone, checkRateLimit, getUserIdentifier } from './utils/formHandler';
 import { showToast } from './utils/toast';
-import { loadArticles, formatDate } from './utils/articles';
-import { initGoogleAnalytics, initYandexMetrika, trackFormSubmit, trackCTAClick } from './utils/analytics';
+import { loadArticles, formatDate, getArticleById } from './utils/articles';
+import { initGoogleAnalytics, initYandexMetrika, trackFormSubmit, trackCTAClick, trackEvent } from './utils/analytics';
 
 console.log('Приложение загружено');
 
@@ -13,6 +13,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализация обработчиков CTA-кнопок с использованием делегирования событий
   // Это позволяет обрабатывать кнопки, добавленные динамически
   let ctaHandlersInitialized = false;
+  let modalOpenedAt = 0;
+  const MIN_SUBMIT_DELAY_MS = 3000;
+
+  const openConsultationModal = (location: string) => {
+    const modal = document.getElementById('consultationModal');
+    if (!modal) return;
+    trackCTAClick(location);
+    trackEventSafe('Modal', 'Open', location);
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    modalOpenedAt = Date.now();
+  };
+
+  const closeConsultationModal = () => {
+    const modal = document.getElementById('consultationModal');
+    if (modal) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      resetForm();
+      trackEventSafe('Modal', 'Close', 'consultation');
+    }
+  };
+
+  const trackEventSafe = (category: string, action: string, label?: string) => {
+    try {
+      trackEvent(category, action, label);
+    } catch {
+      // аналитику не блокируем
+    }
+  };
 
   // Прямое навешивание обработчиков на существующие CTA-кнопки
   // Нужно на случай, если по каким-то причинам делегирование кликов не срабатывает
@@ -38,9 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
 
         const location = button.closest('section')?.className || 'unknown';
-        trackCTAClick(location);
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        openConsultationModal(location);
       });
     });
   };
@@ -85,9 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           e.stopPropagation();
           const location = button.closest('section')?.className || 'unknown';
-          trackCTAClick(location);
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
+          openConsultationModal(location);
         } else {
           console.error('Модальное окно consultationModal не найдено в DOM');
         }
@@ -100,12 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const closeButton = target.closest('.modal-close');
       
       if (closeButton) {
-        const modal = document.getElementById('consultationModal');
-        if (modal) {
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
-          resetForm();
-        }
+        closeConsultationModal();
       }
     });
 
@@ -115,9 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('consultationModal');
       
       if (modal && target === modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        resetForm();
+        closeConsultationModal();
       }
     });
 
@@ -126,9 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Escape') {
         const modal = document.getElementById('consultationModal');
         if (modal && modal.classList.contains('active')) {
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
-          resetForm();
+          closeConsultationModal();
         }
       }
     });
@@ -146,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .register('/career', () => fetch('/src/views/career/career.html').then(r => r.text()))
     .register('/contacts', () => fetch('/src/views/contacts/contacts.html').then(r => r.text()))
     .register('/useful', () => fetch('/src/views/useful/useful.html').then(r => r.text()))
+    .register('/useful/:id', () => fetch('/src/views/article/article.html').then(r => r.text()))
     .register('/privacy', () => fetch('/src/views/privacy/privacy.html').then(r => r.text()))
     .register('/404', () => fetch('/src/views/404/404.html').then(r => r.text()));
   
@@ -206,11 +224,26 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
       const originalText = submitButton.textContent;
+      const btnLabel = submitButton.querySelector('.btn-label') as HTMLElement | null;
+      const honeypot = (form.querySelector('#clientWebsite') as HTMLInputElement)?.value.trim();
+      const elapsed = Date.now() - modalOpenedAt;
+
+      if (honeypot) {
+        showToast('Похоже, запрос выглядит как спам. Попробуйте ещё раз.', { type: 'warning' });
+        return;
+      }
+
+      if (modalOpenedAt && elapsed < MIN_SUBMIT_DELAY_MS) {
+        showToast('Отправка слишком быстрая. Пожалуйста, подождите пару секунд.', { type: 'warning' });
+        trackEventSafe('Form', 'TooFast', 'consultation');
+        return;
+      }
       
       // Проверка rate limiting
       const userIdentifier = getUserIdentifier();
       if (!checkRateLimit(userIdentifier, 3, 60000)) {
         showToast('Слишком много попыток. Пожалуйста, подождите минуту перед повторной отправкой.', { type: 'warning', duration: 5000 });
+        trackEventSafe('Form', 'RateLimited', 'consultation');
         return;
       }
 
@@ -236,34 +269,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Блокируем кнопку отправки
       submitButton.disabled = true;
-      submitButton.textContent = 'Отправка...';
+      submitButton.classList.add('is-loading');
+      if (btnLabel) btnLabel.textContent = 'Отправляем...';
 
       try {
-        const result = await submitForm(formData);
-        
-        if (result.success) {
-          showToast(result.message, { type: 'success', duration: 6000 });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+
+        const response = await fetch('/api/send-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            source: `${window.location.pathname}#modal`,
+            honeypot
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        const result = await response.json().catch(() => ({ ok: false, error: 'Ошибка парсинга ответа' }));
+
+        if (response.ok && result.ok) {
+          showToast('Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.', { type: 'success', duration: 6000 });
           trackFormSubmit('consultation');
+          trackEventSafe('Form', 'SubmitSuccess', 'consultation');
           form.reset();
           clearFormErrors();
           
-          // Закрываем модальное окно через 2 секунды
+          // Закрываем модальное окно через 1.5 секунды
           setTimeout(() => {
-            const modal = document.getElementById('consultationModal');
-            if (modal) {
-              modal.classList.remove('active');
-              document.body.style.overflow = '';
-            }
-          }, 2000);
+            closeConsultationModal();
+          }, 1500);
         } else {
-          showToast(result.message, { type: 'error', duration: 6000 });
+          const message = result?.error || 'Произошла ошибка при отправке заявки. Попробуйте позже.';
+          showToast(message, { type: 'error', duration: 6000 });
+          trackEventSafe('Form', 'SubmitError', message);
         }
       } catch (error) {
-        console.error('Ошибка при отправке формы:', error);
-        showToast('Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже или свяжитесь со мной напрямую.', { type: 'error' });
+        console.error('Ошибка отправки формы:', error);
+        showToast('Ошибка сети. Попробуйте ещё раз или свяжитесь со мной по телефону.', { type: 'error', duration: 6000 });
+        trackEventSafe('Form', 'NetworkError', 'consultation');
       } finally {
         submitButton.disabled = false;
-        submitButton.textContent = originalText || 'Отправить заявку';
+        submitButton.classList.remove('is-loading');
+        if (btnLabel) btnLabel.textContent = originalText || 'Отправить заявку';
       }
     });
   };
@@ -446,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="article-date">${formatDate(article.date)}</div>
           <h3 class="article-title">${escapeHtml(article.title)}</h3>
           <p class="article-excerpt">${escapeHtml(article.excerpt)}</p>
-          <a href="/useful" class="article-link" data-link>Читать далее →</a>
+          <a href="/useful/${article.id}" class="article-link" data-link>Читать далее →</a>
         </article>
       `).join('');
     } catch (error) {
@@ -476,12 +526,53 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="article-date">${formatDate(article.date)}</div>
           <h3 class="article-title">${escapeHtml(article.title)}</h3>
           <p class="article-excerpt">${escapeHtml(article.excerpt)}</p>
-          <a href="/useful" class="article-link" data-link>Читать далее →</a>
+          <a href="/useful/${article.id}" class="article-link" data-link>Читать далее →</a>
         </article>
       `).join('');
     } catch (error) {
       console.error('Ошибка загрузки статей:', error);
       container.innerHTML = '<p class="error-message">Ошибка загрузки статей. Пожалуйста, попробуйте позже.</p>';
+    }
+  };
+
+  // Инициализация детальной страницы статьи
+  const initArticleDetail = async () => {
+    const path = window.location.pathname;
+    const match = path.match(/^\/useful\/([^/]+)$/);
+    if (!match) return;
+
+    const articleId = match[1];
+    const container = document.getElementById('articleContent');
+    const titleEl = document.getElementById('articleTitle');
+    const dateEl = document.getElementById('articleDate');
+
+    if (!container) return;
+
+    try {
+      const article = await getArticleById(articleId);
+      if (!article) {
+        container.innerHTML = '<p class="error-message">Статья не найдена.</p>';
+        document.title = 'Статья не найдена | Адвокат Зайцев';
+        return;
+      }
+
+      if (titleEl) titleEl.textContent = article.title;
+      if (dateEl) dateEl.textContent = formatDate(article.date);
+
+      container.innerHTML = `
+        ${article.image ? `<div class="article-image-wrapper"><img src="${article.image}" alt="${escapeHtml(article.title)}" loading="lazy"></div>` : ''}
+        ${convertMarkdown(article.content)}
+      `;
+
+      updateMetaTags({
+        title: `${article.title} | Адвокат Зайцев`,
+        description: article.excerpt || article.title,
+        url: window.location.href,
+        image: article.image || '/src/assets/svg/scales.svg'
+      });
+    } catch (error) {
+      console.error('Ошибка загрузки статьи:', error);
+      container.innerHTML = '<p class="error-message">Ошибка загрузки статьи. Попробуйте позже.</p>';
     }
   };
 
@@ -492,6 +583,50 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
+  // Простейший Markdown → HTML для статей
+  function convertMarkdown(md: string): string {
+    const lines = md.split('\n');
+    const htmlLines = lines.map(line => {
+      if (line.startsWith('## ')) return `<h3>${escapeHtml(line.replace('## ', ''))}</h3>`;
+      if (line.startsWith('# ')) return `<h2>${escapeHtml(line.replace('# ', ''))}</h2>`;
+      if (line.trim() === '') return '';
+      return `<p>${escapeHtml(line)}</p>`;
+    });
+    return htmlLines.join('');
+  }
+
+  function updateMetaTags(params: { title?: string; description?: string; url?: string; image?: string }) {
+    if (params.title) document.title = params.title;
+    const ensure = (selector: string, attrs: Record<string, string>) => {
+      let el = document.querySelector(selector) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement('meta');
+        Object.keys(attrs).forEach(key => {
+          if (key !== 'content') el?.setAttribute(key, attrs[key]);
+        });
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', attrs.content);
+    };
+
+    if (params.description) {
+      ensure('meta[name="description"]', { name: 'description', content: params.description });
+      ensure('meta[property="og:description"]', { property: 'og:description', content: params.description });
+      ensure('meta[name="twitter:description"]', { name: 'twitter:description', content: params.description });
+    }
+    if (params.title) {
+      ensure('meta[property="og:title"]', { property: 'og:title', content: params.title });
+      ensure('meta[name="twitter:title"]', { name: 'twitter:title', content: params.title });
+    }
+    if (params.url) {
+      ensure('meta[property="og:url"]', { property: 'og:url', content: params.url });
+    }
+    if (params.image) {
+      ensure('meta[property="og:image"]', { property: 'og:image', content: params.image });
+      ensure('meta[name="twitter:image"]', { name: 'twitter:image', content: params.image });
+    }
+  }
+
   // Переинициализация статей при навигации
   const originalReinitialize = router.reinitializeEventHandlers.bind(router);
   router.reinitializeEventHandlers = function() {
@@ -499,6 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initHomeArticles();
       initArticlesPage();
+      initArticleDetail();
       // После подгрузки нового HTML (например, contacts.html) ещё раз привязываем обработчики к CTA-кнопкам
       bindDirectCTAButtons();
     }, 100);
@@ -507,5 +643,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализация статей при загрузке страницы
   initHomeArticles();
   initArticlesPage();
+  initArticleDetail();
 });
 

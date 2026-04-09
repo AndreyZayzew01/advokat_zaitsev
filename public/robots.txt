@@ -1,10 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 
-# Sitemap
 Sitemap: https://advokat-zaitsev.ru/sitemap.xml
-
-# Запрещаем индексацию служебных файлов
-Disallow: /src/
-Disallow: /node_modules/
-
