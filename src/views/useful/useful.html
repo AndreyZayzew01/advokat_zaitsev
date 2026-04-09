@@ -1,19 +1,24 @@
-<link rel="stylesheet" href="/src/views/useful/useful.css" />
+﻿<link rel="stylesheet" href="/src/views/useful/useful.css" />
 <section class="page-header">
   <div class="container">
     <h1 class="page-title">Полезное</h1>
-    <p class="page-subtitle">Полезная информация и статьи по правовым вопросам</p>
+    <p class="page-subtitle">Подборка статей и разборов кейсов.</p>
   </div>
 </section>
 
 <section class="useful">
   <div class="container">
-    <div class="useful-content">
-      <h2 class="section-title">Полезные материалы</h2>
-      
-      <div class="articles-grid" id="articlesContainer">
-        <div class="loading-message">Загрузка статей...</div>
-      </div>
+    <div class="filter-bar">
+      <input type="search" id="articlesSearch" placeholder="Поиск по заголовку" />
+      <select id="articlesCategory">
+        <option value="">Все категории</option>
+        <option value="Семейное право">Семейное право</option>
+        <option value="Наследственное право">Наследственное право</option>
+        <option value="Трудовое право">Трудовое право</option>
+      </select>
+    </div>
+    <div class="articles-grid" id="articlesContainer">
+      <div class="loading-message">Загрузка статей...</div>
     </div>
   </div>
 </section>
@@ -22,8 +27,8 @@
   <div class="container">
     <div class="cta-content">
       <h2 class="cta-title">Нужна консультация?</h2>
-      <p class="cta-text">Запишитесь на первичную консультацию</p>
-      <button type="button" class="cta-button cta-button-large">Записаться на консультацию</button>
+      <p class="hero-subtitle">Запишитесь на удобное время или задайте вопрос онлайн.</p>
+      <button type="button" class="btn cta-button">Записаться на консультацию</button>
     </div>
   </div>
 </section>

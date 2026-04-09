@@ -1,6 +1,4 @@
-// Утилиты для работы со статьями
-
-export interface Article {
+﻿export interface Article {
   id: string;
   title: string;
   excerpt: string;
@@ -13,17 +11,11 @@ export interface Article {
 
 let articlesCache: Article[] | null = null;
 
-// Загрузка статей
 export async function loadArticles(): Promise<Article[]> {
-  if (articlesCache) {
-    return articlesCache;
-  }
-
+  if (articlesCache) return articlesCache;
   try {
     const response = await fetch('/src/data/articles.json');
-    if (!response.ok) {
-      throw new Error('Не удалось загрузить статьи');
-    }
+    if (!response.ok) throw new Error('Не удалось загрузить статьи');
     articlesCache = await response.json();
     return articlesCache || [];
   } catch (error) {
@@ -32,24 +24,16 @@ export async function loadArticles(): Promise<Article[]> {
   }
 }
 
-// Получить статью по ID
 export async function getArticleById(id: string): Promise<Article | null> {
   const articles = await loadArticles();
   return articles.find(article => article.id === id) || null;
 }
 
-// Форматирование даты
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const months = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    'января','февраля','марта','апреля','мая','июня',
+    'июля','августа','сентября','октября','ноября','декабря'
   ];
-  
-  const day = date.getDate();
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-  
-  return `${day} ${month} ${year}`;
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
-
