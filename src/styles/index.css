@@ -1,4 +1,4 @@
-﻿/* Global theme */
+/* Global theme */
 :root {
   --font-heading: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -10,6 +10,7 @@
   --color-accent: #d6a354;
   --color-text: #e7edf5;
   --color-muted: #9fb1c9;
+  --color-header-bg: rgba(12, 26, 43, 0.8);
   --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.35);
   --radius: 16px;
   --border: 1px solid rgba(255, 255, 255, 0.08);
@@ -50,7 +51,7 @@ p { margin: 0 0 12px; color: var(--color-muted); }
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(12,26,43,0.8);
+  background: var(--color-header-bg);
   backdrop-filter: blur(14px);
   border-bottom: var(--border);
 }
@@ -62,6 +63,15 @@ p { margin: 0 0 12px; color: var(--color-muted); }
   gap: 18px;
 }
 .logo { display: flex; gap: 12px; align-items: center; cursor: pointer; }
+.logo-emblem {
+  width: 56px;
+  height: 56px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--color-header-bg);
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .logo h1 { font-size: 24px; margin: 0; }
 .logo-subtitle { font-size: 13px; color: var(--color-muted); margin: 2px 0 0; }
 .navigation { display: flex; gap: 18px; align-items: center; }
