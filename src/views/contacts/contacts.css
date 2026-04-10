@@ -1,4 +1,4 @@
-﻿.page-header { padding: 60px 0 20px; }
+﻿.page-header { padding: 60px 0 0px; }
 .page-title { font-size: 32px; }
 .page-subtitle { color: var(--color-muted); }
 .contacts-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 16px; }

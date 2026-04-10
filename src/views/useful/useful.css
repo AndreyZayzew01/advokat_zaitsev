@@ -38,13 +38,6 @@
   font-size: 22px;
 }
 
-.citation {
-  color: var(--color-accent);
-  text-decoration: underline;
-  text-decoration-thickness: from-font;
-  text-underline-offset: 2px;
-}
-
 .sources-list {
   list-style: none;
   padding: 0;
