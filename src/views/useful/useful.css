@@ -3,3 +3,51 @@
 .page-subtitle { color: var(--color-muted); }
 .useful .articles-grid { margin-top: 12px; }
 .loading-message { color: var(--color-muted); }
+
+.filter-bar.is-hidden { display: none; }
+
+.article-view { margin-top: 14px; }
+.article-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+.article-back:hover { color: #fff; border-color: rgba(214, 163, 84, 0.5); }
+
+.article-content {
+  margin-top: 14px;
+  background: var(--color-card);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+.article-content p {
+  margin: 0 0 14px;
+  color: var(--color-text);
+}
+
+.article-content h2 {
+  margin-top: 26px;
+  font-size: 22px;
+}
+
+.citation {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 2px;
+}
+
+.sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+.sources-list li { margin: 0 0 10px; color: var(--color-muted); }

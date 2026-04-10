@@ -58,13 +58,19 @@
 }
 
 .achievement-icon {
-  font-size: 48px;
-  margin-bottom: 15px;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .achievement-icon .icon {
+  display: block;
   width: 40px;
   height: 40px;
+  object-fit: contain;
   color: #1e40af;
 }
 
