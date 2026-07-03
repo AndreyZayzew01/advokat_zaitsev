@@ -10,6 +10,7 @@ interface Route {
 export class Router {
   private routes: Route[] = [];
   private appContainer: HTMLElement | null = null;
+  private baseUrl = import.meta.env.BASE_URL || '/';
 
   constructor() {
     this.appContainer = document.getElementById('app');
@@ -52,7 +53,7 @@ export class Router {
 
   // Навигация по URL
   navigate(url: string): void {
-    history.pushState(null, '', url);
+    history.pushState(null, '', this.toBrowserUrl(url));
     this.handleRoute();
     this.updateActiveLink();
   }
@@ -61,7 +62,7 @@ export class Router {
   async handleRoute(): Promise<void> {
     if (!this.appContainer) return;
 
-    const path = window.location.pathname || '/';
+    const path = this.getCurrentPath();
     const route = this.routes.find(r => r.path === path) || 
                   this.routes.find(r => r.path === '/404');
 
@@ -128,7 +129,7 @@ export class Router {
 
   // Обновление активной ссылки в навигации
   private updateActiveLink(): void {
-    const path = window.location.pathname || '/';
+    const path = this.getCurrentPath();
     const navLinks = document.querySelectorAll('.nav-link[data-link]');
     
     navLinks.forEach(link => {
@@ -148,6 +149,7 @@ export class Router {
     
     while ((match = linkRegex.exec(html)) !== null) {
       const href = match[1];
+      if (href.startsWith('/src/')) continue;
       // Проверяем, не загружен ли уже этот CSS
       const existingLink = document.querySelector(`link[href="${href}"]`);
       if (!existingLink) {
@@ -172,6 +174,26 @@ export class Router {
         }
       });
     });
+  }
+
+  private getCurrentPath(): string {
+    const pathname = window.location.pathname || '/';
+    const basePath = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`;
+
+    if (basePath !== '/' && pathname.startsWith(basePath)) {
+      return pathname.slice(basePath.length - 1) || '/';
+    }
+
+    return pathname;
+  }
+
+  private toBrowserUrl(url: string): string {
+    if (!url.startsWith('/')) return url;
+
+    const basePath = this.baseUrl.replace(/\/$/, '');
+    if (!basePath || url.startsWith(`${basePath}/`)) return url;
+
+    return `${basePath}${url}`;
   }
 }
 
