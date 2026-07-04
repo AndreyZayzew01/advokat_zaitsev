@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function initCTAButtons() {
     const modalEl = document.getElementById('consultationModal');
     if (!modalEl) return;
+    if (document.body.dataset.ctaInitialized === 'true') return;
+    document.body.dataset.ctaInitialized = 'true';
+
     const modal = modalEl as HTMLElement;
 
     document.body.addEventListener('click', (e) => {
