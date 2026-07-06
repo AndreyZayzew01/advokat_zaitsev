@@ -1,6 +1,4 @@
-// Обработчик формы консультации
-
-interface FormData {
+export interface ConsultationFormData {
   name: string;
   phone: string;
   email?: string;
@@ -9,8 +7,31 @@ interface FormData {
   consent: boolean;
 }
 
-// Валидация формы
-export function validateForm(formData: FormData): { isValid: boolean; errors: string[] } {
+export interface FormSubmitResult {
+  success: boolean;
+  message: string;
+}
+
+interface EmailJSConfig {
+  serviceId: string;
+  templateId: string;
+  publicKey: string;
+  recipientEmail: string;
+}
+
+type EmailJSClient = {
+  send: (
+    serviceId: string,
+    templateId: string,
+    params: Record<string, string>,
+    publicKey: string
+  ) => Promise<unknown>;
+};
+
+const FORM_NOT_CONFIGURED_MESSAGE =
+  'Форма пока не подключена к отправке. Пожалуйста, свяжитесь по телефону или через Telegram.';
+
+export function validateForm(formData: ConsultationFormData): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!formData.name || formData.name.trim().length < 2) {
@@ -31,100 +52,115 @@ export function validateForm(formData: FormData): { isValid: boolean; errors: st
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
-// Проверка телефона
 function isValidPhone(phone: string): boolean {
   const phoneRegex = /^[\d\s()+-]+$/;
   const digitsOnly = phone.replace(/\D/g, '');
   return phoneRegex.test(phone) && digitsOnly.length >= 10;
 }
 
-// Проверка email
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-// Форматирование телефона
 export function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
-  
-  if (digits.length === 0) return '';
-  if (digits.length <= 1) return `+7 (${digits}`;
-  if (digits.length <= 4) return `+7 (${digits.slice(1)}`;
-  if (digits.length <= 7) return `+7 (${digits.slice(1, 4)}) ${digits.slice(4)}`;
-  if (digits.length <= 9) return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
-  return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
+  const normalized = digits.startsWith('8') ? `7${digits.slice(1)}` : digits;
+
+  if (normalized.length === 0) return '';
+  if (normalized.length <= 1) return `+7 (${normalized.slice(1)}`;
+  if (normalized.length <= 4) return `+7 (${normalized.slice(1)}`;
+  if (normalized.length <= 7) return `+7 (${normalized.slice(1, 4)}) ${normalized.slice(4)}`;
+  if (normalized.length <= 9) return `+7 (${normalized.slice(1, 4)}) ${normalized.slice(4, 7)}-${normalized.slice(7)}`;
+  return `+7 (${normalized.slice(1, 4)}) ${normalized.slice(4, 7)}-${normalized.slice(7, 9)}-${normalized.slice(9, 11)}`;
 }
 
-// Rate limiting - простая защита от спама
 const submitHistory: Map<string, number[]> = new Map();
 
-export function checkRateLimit(identifier: string, maxSubmits: number = 3, timeWindow: number = 60000): boolean {
+export function checkRateLimit(identifier: string, maxSubmits = 3, timeWindow = 60_000): boolean {
   const now = Date.now();
   const userSubmits = submitHistory.get(identifier) || [];
-  
-  // Удаляем старые записи
   const recentSubmits = userSubmits.filter(time => now - time < timeWindow);
-  
+
   if (recentSubmits.length >= maxSubmits) {
     return false;
   }
-  
+
   recentSubmits.push(now);
   submitHistory.set(identifier, recentSubmits);
   return true;
 }
 
-// Получение идентификатора пользователя (упрощенный вариант)
-export function getUserIdentifier(): string {
-  return navigator.userAgent + (navigator.language || '');
+export function resetRateLimitForTests(): void {
+  submitHistory.clear();
 }
 
-// Отправка формы через EmailJS
-export async function submitForm(formData: FormData): Promise<{ success: boolean; message: string }> {
-  // Проверка наличия EmailJS
-  if (typeof (window as any).emailjs === 'undefined') {
-    // Fallback: просто показываем сообщение об успехе (для демо)
-    console.warn('EmailJS не загружен. Используется демо-режим.');
+export function getUserIdentifier(): string {
+  return `${navigator.userAgent}:${navigator.language || ''}`;
+}
+
+function getEmailJSConfig(): EmailJSConfig | null {
+  const env = import.meta.env;
+  const serviceId = env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = env.VITE_EMAILJS_PUBLIC_KEY;
+  const recipientEmail = env.VITE_FORM_RECIPIENT_EMAIL || 'info@advokat-zaitsev.ru';
+
+  if (!serviceId || !templateId || !publicKey) {
+    return null;
+  }
+
+  return {
+    serviceId,
+    templateId,
+    publicKey,
+    recipientEmail,
+  };
+}
+
+export function isFormDeliveryConfigured(): boolean {
+  return Boolean(getEmailJSConfig() && (window as Window & { emailjs?: EmailJSClient }).emailjs);
+}
+
+export async function submitForm(formData: ConsultationFormData): Promise<FormSubmitResult> {
+  const config = getEmailJSConfig();
+  const emailjs = (window as Window & { emailjs?: EmailJSClient }).emailjs;
+
+  if (!config || !emailjs) {
     return {
-      success: true,
-      message: 'Заявка принята! В демо-режиме данные не отправляются. Настройте EmailJS для реальной отправки.'
+      success: false,
+      message: FORM_NOT_CONFIGURED_MESSAGE,
     };
   }
 
   try {
-    const emailjs = (window as any).emailjs;
-    
-    // Параметры для EmailJS (нужно настроить в EmailJS dashboard)
-    const serviceId = 'YOUR_SERVICE_ID'; // Заменить на реальный
-    const templateId = 'YOUR_TEMPLATE_ID'; // Заменить на реальный
-    const publicKey = 'YOUR_PUBLIC_KEY'; // Заменить на реальный
+    await emailjs.send(
+      config.serviceId,
+      config.templateId,
+      {
+        from_name: formData.name,
+        from_phone: formData.phone,
+        from_email: formData.email || 'не указан',
+        consultation_type: formData.type || 'не указан',
+        message: formData.message || 'не указано',
+        to_email: config.recipientEmail,
+      },
+      config.publicKey
+    );
 
-    const templateParams = {
-      from_name: formData.name,
-      from_phone: formData.phone,
-      from_email: formData.email || 'не указан',
-      consultation_type: formData.type || 'не указан',
-      message: formData.message || 'не указано',
-      to_email: 'info@advokat-zaitsev.ru'
-    };
-
-    await emailjs.send(serviceId, templateId, templateParams, publicKey);
-    
     return {
       success: true,
-      message: 'Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.'
+      message: 'Заявка успешно отправлена. Я свяжусь с вами в ближайшее время.',
     };
   } catch (error) {
     console.error('Ошибка отправки формы:', error);
     return {
       success: false,
-      message: 'Произошла ошибка при отправке заявки. Пожалуйста, попробуйте позже или свяжитесь со мной напрямую.'
+      message: 'Не удалось отправить заявку. Пожалуйста, попробуйте позже или свяжитесь напрямую.',
     };
   }
 }
-
