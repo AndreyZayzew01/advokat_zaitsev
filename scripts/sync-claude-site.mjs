@@ -153,6 +153,64 @@ template = replacePatternOnce(
   'replace career timeline',
 );
 
+template = replaceOnce(
+  template,
+  `    this.setState({ submitted: true, error: '' });`,
+  `    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this.setState({
+      submitted: true,
+      error: '',
+      form: { name: '', phone: '', desc: '', pref: 'Телефон', consent: false },
+    });
+    this._toastTimer = setTimeout(() => this.setState({ submitted: false }), 4000);`,
+  'replace mock submit result',
+);
+
+template = replaceOnce(
+  template,
+  `    window.removeEventListener('keydown', this._onKey);`,
+  `    window.removeEventListener('keydown', this._onKey);
+    if (this._toastTimer) clearTimeout(this._toastTimer);`,
+  'clear toast timer on unmount',
+);
+
+template = replaceOnce(
+  template,
+  `submitted: s.submitted, notSubmitted: !s.submitted`,
+  `submitted: s.submitted, notSubmitted: true`,
+  'keep form visible after mock submit',
+);
+
+template = replacePatternOnce(
+  template,
+  /        <sc-if value="\{\{ submitted \}\}" hint-placeholder-val="\{\{ false \}\}">[\s\S]*?        <\/sc-if>\n/,
+  '',
+  'remove inline success replacement',
+);
+
+const toast = `  <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+    <div role="status" aria-live="polite" style="position:fixed;right:22px;bottom:22px;z-index:90;display:flex;align-items:center;gap:12px;max-width:min(380px,calc(100vw - 44px));padding:16px 18px;border:1px solid rgba(189,154,92,.55);border-radius:12px;background:#1c2430;color:#f4f1ea;box-shadow:0 22px 50px rgba(0,0,0,.35)">
+      <span aria-hidden="true" style="width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:50%;background:#bd9a5c;color:#161d27;font:700 16px 'Manrope',sans-serif">✓</span>
+      <span style="font:600 15px 'Manrope',sans-serif">Письмо отправлено</span>
+    </div>
+  </sc-if>
+
+`;
+
+template = replaceOnce(
+  template,
+  `<!-- ================= ПЛАВАЮЩИЕ КНОПКИ (МОБИЛЬНЫЕ) ================= -->`,
+  `${toast}<!-- ================= ПЛАВАЮЩИЕ КНОПКИ (МОБИЛЬНЫЕ) ================= -->`,
+  'insert fixed success notification',
+);
+
+template = replacePatternOnce(
+  template,
+  /    \/\* TODO: здесь подключите отправку заявки \(email, Telegram-бот или бэкенд\)\. \*\/\n/,
+  '',
+  'remove obsolete submission integration comment',
+);
+
 html = html.replace(
   manifestScript.pattern,
   `<script type="__bundler/manifest">\n${scriptJson(manifest, 2)}\n</script>`,

@@ -98,3 +98,29 @@ describe('personalized content', () => {
     }
   });
 });
+
+describe('mock consultation submission', () => {
+  it('validates the required fields and consent', () => {
+    const { template } = readBundle();
+
+    expect(template).toContain(
+      "error: 'Пожалуйста, укажите имя и телефон.'",
+    );
+    expect(template).toContain(
+      "error: 'Отметьте согласие на обработку персональных данных.'",
+    );
+  });
+
+  it('shows a styled live notification without network submission', () => {
+    const { template } = readBundle();
+
+    expect(template).toContain('role="status"');
+    expect(template).toContain('aria-live="polite"');
+    expect(template).toContain('Письмо отправлено');
+    expect(template).toContain('position:fixed');
+    expect(template).not.toContain('fetch(');
+    expect(template).not.toContain('XMLHttpRequest');
+    expect(template).not.toContain('formsubmit.co');
+    expect(template).not.toContain('web3forms');
+  });
+});
