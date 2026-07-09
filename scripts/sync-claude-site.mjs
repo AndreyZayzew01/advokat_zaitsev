@@ -47,6 +47,26 @@ function scriptJson(value, space) {
   return JSON.stringify(value, null, space).replace(/<\/script/gi, '<\\/script');
 }
 
+function moveNoscriptFallbackOutOfHead(value) {
+  const pattern =
+    /  <noscript>\r?\n    <style>#__bundler_loading \{ display: none; \}<\/style>\r?\n    (<div style="position:fixed;bottom:12px;left:12px;[\s\S]*?<\/div>)\r?\n  <\/noscript>/;
+  const match = value.match(pattern);
+
+  if (!match) {
+    throw new Error('move noscript fallback: expected one head noscript block');
+  }
+
+  const headNoscript = `  <noscript>
+    <style>#__bundler_loading { display: none; }</style>
+  </noscript>`;
+  const bodyNoscript = `<body>
+  <noscript>
+    ${match[1]}
+  </noscript>`;
+
+  return value.replace(pattern, headNoscript).replace('<body>', bodyNoscript);
+}
+
 const manifestScript = scriptMatch('__bundler/manifest');
 const templateScript = scriptMatch('__bundler/template');
 const manifest = JSON.parse(manifestScript.body);
@@ -219,5 +239,6 @@ html = html.replace(
   templateScript.pattern,
   `<script type="__bundler/template">\n${scriptJson(template)}\n</script>`,
 );
+html = moveNoscriptFallbackOutOfHead(html);
 
 writeFileSync(outputPath, html, 'utf8');

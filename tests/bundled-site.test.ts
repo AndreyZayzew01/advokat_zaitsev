@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { readBundle } from './bundle-fixture';
 
@@ -122,5 +124,30 @@ describe('mock consultation submission', () => {
     expect(template).not.toContain('XMLHttpRequest');
     expect(template).not.toContain('formsubmit.co');
     expect(template).not.toContain('web3forms');
+  });
+});
+
+describe('one-page repository cleanup', () => {
+  it('has no legacy SPA source tree', () => {
+    expect(existsSync(join(process.cwd(), 'src'))).toBe(false);
+  });
+
+  it('publishes only the canonical page in the sitemap', () => {
+    const sitemap = readFileSync(
+      join(process.cwd(), 'public', 'sitemap.xml'),
+      'utf8',
+    );
+
+    expect(sitemap.match(/<url>/g)).toHaveLength(1);
+    expect(sitemap).toContain('<loc>https://advokat-zaitsev.ru/</loc>');
+    expect(sitemap).not.toContain('/services');
+    expect(sitemap).not.toContain('/useful');
+  });
+
+  it('keeps the generated wrapper parseable by Vite', () => {
+    const { html } = readBundle();
+    const head = html.match(/<head>[\s\S]*?<\/head>/)?.[0] ?? '';
+
+    expect(head).not.toMatch(/<noscript>[\s\S]*?<div[\s\S]*?<\/noscript>/);
   });
 });

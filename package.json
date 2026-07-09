@@ -5,12 +5,10 @@
   "scripts": {
     "sync:site": "node scripts/sync-claude-site.mjs",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run",
-    "audit:content": "node scripts/audit-content.mjs",
-    "sitemap": "node scripts/generate-sitemap.mjs"
+    "test:run": "vitest run"
   },
   "devDependencies": {
     "jsdom": "^24.1.3",
