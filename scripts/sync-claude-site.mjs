@@ -1,0 +1,165 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const sourcePath = join(root, 'vendor', 'claude-site.html');
+const photoPath = join(root, 'assets', 'advocat_photo.jpg');
+const outputPath = join(root, 'index.html');
+
+let html = readFileSync(sourcePath, 'utf8');
+
+function scriptMatch(type) {
+  const pattern = new RegExp(
+    `<script type="${type}">\\s*([\\s\\S]*?)\\s*<\\/script>`,
+  );
+  const match = html.match(pattern);
+
+  if (!match) {
+    throw new Error(`Missing ${type}`);
+  }
+
+  return { pattern, body: match[1] };
+}
+
+function replaceOnce(value, before, after, label) {
+  const parts = value.split(before);
+
+  if (parts.length !== 2) {
+    throw new Error(`${label}: expected one match, found ${parts.length - 1}`);
+  }
+
+  return `${parts[0]}${after}${parts[1]}`;
+}
+
+function replacePatternOnce(value, pattern, after, label) {
+  const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
+  const matches = value.match(new RegExp(pattern.source, flags));
+
+  if (!matches || matches.length !== 1) {
+    throw new Error(`${label}: expected one match, found ${matches?.length ?? 0}`);
+  }
+
+  return value.replace(pattern, after);
+}
+
+function scriptJson(value, space) {
+  return JSON.stringify(value, null, space).replace(/<\/script/gi, '<\\/script');
+}
+
+const manifestScript = scriptMatch('__bundler/manifest');
+const templateScript = scriptMatch('__bundler/template');
+const manifest = JSON.parse(manifestScript.body);
+let template = JSON.parse(templateScript.body);
+
+manifest['advokat-zaitsev-photo'] = {
+  mime: 'image/jpeg',
+  data: readFileSync(photoPath).toString('base64'),
+  compressed: false,
+};
+
+const literalReplacements = [
+  ["name: 'Фамилия Имя Отчество'", "name: 'Зайцев Валерий Олегович'"],
+  ["monogram: 'АА'", "monogram: 'ЗО'"],
+  ["phoneDisplay: '+7 (000) 000-00-00'", "phoneDisplay: '+7 (777) 777-77-77'"],
+  ["phoneHref: '+70000000000'", "phoneHref: '+77777777777'"],
+  ["tgHandle: '@username'", "tgHandle: 'Telegram'"],
+  ["tgUrl: 'https://t.me/username'", "tgUrl: 'https://t.me/'"],
+  ["email: 'mail@example.ru'", "email: 'info@advokat-zaitsev.ru'"],
+  [
+    "address: 'г. Абакан, ул. Пример, д. 00, офис 000'",
+    "address: 'с. Бея, ул. Магистральная, д. 11г'",
+  ],
+  [
+    "mapsUrl: 'https://yandex.ru/maps/?text=Абакан'",
+    "mapsUrl: 'https://yandex.ru/maps/?text=село+Бея+Магистральная+11г'",
+  ],
+  [
+    "routeUrl: 'https://yandex.ru/maps/?rtext=~Абакан'",
+    "routeUrl: 'https://yandex.ru/maps/?rtext=~село+Бея+Магистральная+11г'",
+  ],
+  ['Приём в офисе в Абакане.', 'Приём в офисе в с. Бея.'],
+  [
+    'Да — очно в Абакане и дистанционно по всей республике.',
+    'Да — очно в с. Бея и дистанционно по всей республике.',
+  ],
+  [
+    'Карта — место приёма в Абакане',
+    'Карта — место приёма в с. Бея',
+  ],
+];
+
+for (const [before, after] of literalReplacements) {
+  template = replaceOnce(template, before, after, `replace ${before}`);
+}
+
+template = replacePatternOnce(
+  template,
+  /Юридическая практика — \[[^\]]+\] лет\./,
+  'Юридическая практика — более 15 лет.',
+  'replace practice duration',
+);
+
+template = replaceOnce(
+  template,
+  "{ t: 'Стаж практики', d: 'Юридическая практика — более 15 лет.' }",
+  "{ t: 'Более 15 лет практики', d: 'Юридическая практика — более 15 лет.' }",
+  'replace trust practice title',
+);
+
+template = replacePatternOnce(
+  template,
+  /Стаж практики — \[[0-9]+\] лет/,
+  'Стаж практики — более 15 лет',
+  'replace hero practice duration',
+);
+
+template = replacePatternOnce(
+  template,
+  /            <div role="img" aria-label="Профессиональное фото адвоката"[\s\S]*?<\/div>\n            <div style="position:absolute/,
+  `            <img src="advokat-zaitsev-photo" alt="Адвокат Зайцев Валерий Олегович" style="display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center top;border-radius:16px;border:1px solid rgba(189,154,92,.5);box-shadow:0 30px 64px rgba(0,0,0,.4)">
+            <div style="position:absolute`,
+  'replace hero portrait placeholder',
+);
+
+const articles = `  articles = [
+    { t: 'Как защитить свои права при разводе', d: 'Практические советы по защите имущественных и личных прав при расторжении брака.' },
+    { t: 'Наследство: что нужно знать', d: 'Ключевые шаги оформления наследства и ошибки, которых важно избежать.' },
+    { t: 'Покупка квартиры на вторичном рынке: что проверить до сделки', d: 'Как проверить юридическую чистоту квартиры и продавца до внесения аванса и подписания договора.' },
+    { t: 'Если вас задержали: что делать сразу', d: 'Первые действия при доставлении и задержании: права, адвокат, документы, сроки и фиксация нарушений.' },
+    { t: 'Допрос: как себя вести, чтобы не навредить себе', d: 'Процессуальный статус, адвокат, статья 51, порядок допроса и проверка протокола.' },
+    { t: 'Повестка, вызов, опрос, допрос: в чем разница и почему это важно', d: 'Различия, которые напрямую влияют на ваши права, обязанности и риски.' },
+  ];`;
+
+template = replacePatternOnce(
+  template,
+  /  articles = \[[\s\S]*?\n  \];/,
+  articles,
+  'replace articles',
+);
+
+const timeline = `  timeline = [
+    { y: '2008', t: 'Начало карьеры', d: 'Начало адвокатской практики, работа в различных областях права.' },
+    { y: '2010–2015', t: 'Расширение практики', d: 'Углубление специализации, работа со сложными делами.' },
+    { y: '2015–2020', t: 'Профессиональный рост', d: 'Накопление опыта, успешное ведение дел различной сложности.' },
+    { y: '2020–настоящее время', t: 'Современная практика', d: 'Продолжение практики и помощь клиентам в решении юридических вопросов.' },
+    { y: 'Специализация', t: 'Основные направления', d: 'Уголовные, семейные, наследственные и гражданские дела.' },
+  ];`;
+
+template = replacePatternOnce(
+  template,
+  /  timeline = \[[\s\S]*?\n  \];/,
+  timeline,
+  'replace career timeline',
+);
+
+html = html.replace(
+  manifestScript.pattern,
+  `<script type="__bundler/manifest">\n${scriptJson(manifest, 2)}\n</script>`,
+);
+html = html.replace(
+  templateScript.pattern,
+  `<script type="__bundler/template">\n${scriptJson(template)}\n</script>`,
+);
+
+writeFileSync(outputPath, html, 'utf8');

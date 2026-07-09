@@ -52,3 +52,49 @@ describe('Claude bundle baseline', () => {
     }
   });
 });
+
+describe('personalized content', () => {
+  it('uses existing lawyer and contact data', () => {
+    const { template } = readBundle();
+
+    expect(template).toContain("name: 'Зайцев Валерий Олегович'");
+    expect(template).toContain("monogram: 'ЗО'");
+    expect(template).toContain("phoneDisplay: '+7 (777) 777-77-77'");
+    expect(template).toContain("phoneHref: '+77777777777'");
+    expect(template).toContain("tgUrl: 'https://t.me/'");
+    expect(template).toContain("email: 'info@advokat-zaitsev.ru'");
+    expect(template).toContain("address: 'с. Бея, ул. Магистральная, д. 11г'");
+    expect(template).toContain('Более 15 лет практики');
+    expect(template).toContain('Приём в офисе в с. Бея.');
+    expect(template).toContain("y: '2008'");
+    expect(template).toContain("y: '2020–настоящее время'");
+  });
+
+  it('embeds the existing portrait in the bundle manifest', () => {
+    const { template, manifest } = readBundle();
+    const photo = manifest['advokat-zaitsev-photo'];
+
+    expect(photo.mime).toBe('image/jpeg');
+    expect(photo.compressed).toBe(false);
+    expect(photo.data.length).toBeGreaterThan(1_000);
+    expect(template).toContain('src="advokat-zaitsev-photo"');
+    expect(template).toContain(
+      'alt="Адвокат Зайцев Валерий Олегович"',
+    );
+  });
+
+  it('uses the six existing article titles and excerpts', () => {
+    const { template } = readBundle();
+
+    for (const title of [
+      'Как защитить свои права при разводе',
+      'Наследство: что нужно знать',
+      'Покупка квартиры на вторичном рынке: что проверить до сделки',
+      'Если вас задержали: что делать сразу',
+      'Допрос: как себя вести, чтобы не навредить себе',
+      'Повестка, вызов, опрос, допрос: в чем разница и почему это важно',
+    ]) {
+      expect(template).toContain(title);
+    }
+  });
+});
