@@ -125,6 +125,15 @@ describe('mock consultation submission', () => {
     expect(template).not.toContain('formsubmit.co');
     expect(template).not.toContain('web3forms');
   });
+
+  it('uses button privacy triggers that the bundled runtime can bind', () => {
+    const { template } = readBundle();
+
+    expect(template).toContain(
+      '<button type="button" onclick="{{ openPrivacy }}"',
+    );
+    expect(template).not.toContain('<a href="#" onclick="{{ openPrivacy }}"');
+  });
 });
 
 describe('one-page repository cleanup', () => {

@@ -231,6 +231,20 @@ template = replacePatternOnce(
   'remove obsolete submission integration comment',
 );
 
+template = replaceOnce(
+  template,
+  `<a href="#" onclick="{{ openPrivacy }}" style="color:#8a6d3b;text-decoration:underline">политикой конфиденциальности</a>`,
+  `<button type="button" onclick="{{ openPrivacy }}" style="display:inline;padding:0;border:0;background:transparent;color:#8a6d3b;text-decoration:underline;font:inherit;cursor:pointer">политикой конфиденциальности</button>`,
+  'replace form privacy anchor',
+);
+
+template = replaceOnce(
+  template,
+  `<a href="#" onclick="{{ openPrivacy }}" style="color:#c7cfda;font:500 12.5px 'Manrope',sans-serif" style-hover="color:#fff">Политика конфиденциальности</a>`,
+  `<button type="button" onclick="{{ openPrivacy }}" style="padding:0;border:0;background:transparent;color:#c7cfda;font:500 12.5px 'Manrope',sans-serif;cursor:pointer" style-hover="color:#fff">Политика конфиденциальности</button>`,
+  'replace footer privacy anchor',
+);
+
 html = html.replace(
   manifestScript.pattern,
   `<script type="__bundler/manifest">\n${scriptJson(manifest, 2)}\n</script>`,
